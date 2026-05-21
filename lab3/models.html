@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto Store</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+    <header class="navbar">
+
+        <h1>🚘 Auto Store</h1>
+
+        <div class="nav-buttons">
+
+            <button id="authBtn">
+                Вхід / Реєстрація
+            </button>
+
+            <button id="cartBtn">
+                🛒 Кошик
+            </button>
+
+        </div>
+
+    </header>
+
+    <section class="promo">
+
+        <button id="prevBtn">◀</button>
+
+        <div class="promo-content">
+
+            <h2 id="promo-title">
+                Весняні знижки!
+            </h2>
+
+            <p id="promo-text">
+                Знижки на Audi та BMW.
+            </p>
+
+        </div>
+
+        <button id="nextBtn">▶</button>
+
+    </section>
+
+    <section class="filter-box">
+
+        <button onclick="show('все')">
+            Всі
+        </button>
+
+        <button onclick="show('sedan')">
+            Седани
+        </button>
+
+        <button onclick="show('suv')">
+            SUV
+        </button>
+
+        <button onclick="show('electric')">
+            Електро
+        </button>
+
+        <select id="sortPrice">
+
+            <option value="default">
+                Сортування
+            </option>
+
+            <option value="cheap">
+                Від дешевих
+            </option>
+
+            <option value="expensive">
+                Від дорогих
+            </option>
+
+        </select>
+
+    </section>
+
+    <main>
+
+        <div id="product-grid"></div>
+
+    </main>
+
+    <section id="admin-panel">
+
+        <h2>⚙️ Admin Panel</h2>
+
+        <input type="text" id="item-name" placeholder="Назва авто">
+
+        <input type="text" id="item-description" placeholder="Тип авто / опис">
+
+        <input type="number" id="item-price" placeholder="Ціна">
+
+        <input type="text" id="item-image" placeholder="URL картинки">
+
+        <button onclick="addItem()">
+            Додати авто
+        </button>
+
+        <hr>
+
+        <h3>📊 Статистика</h3>
+
+        <button onclick="pokazatyGrafik('bar')">
+            Bar
+        </button>
+
+        <button onclick="pokazatyGrafik('pie')">
+            Pie
+        </button>
+
+        <button onclick="pokazatyGrafik('line')">
+            Line
+        </button>
+
+        <canvas id="moiaDiagrama"></canvas>
+
+    </section>
+
+    <div id="auth-modal" class="hidden modal">
+
+        <div class="modal-content">
+
+            <h2 id="titul">
+                Вхід
+            </h2>
+
+            <form id="forma">
+
+                <input type="text" id="log" placeholder="Логін" required>
+
+                <input type="password" id="pas" placeholder="Пароль" required>
+
+                <input type="password" id="pas2" class="hidden" placeholder="Повторіть пароль">
+
+                <button type="submit" id="knopka">
+                    Увійти
+                </button>
+
+            </form>
+
+            <p id="sos"></p>
+
+            <button id="zmina">
+                Ще немає акаунту? Реєстрація
+            </button>
+
+            <button id="close-auth">
+                Закрити
+            </button>
+
+        </div>
+
+    </div>
+
+    <div id="profile-modal" class="hidden modal">
+
+        <div class="modal-content">
+
+            <h2>
+                👤 Особистий кабінет
+            </h2>
+
+            <p>
+                Логін:
+                <span id="profile-login"></span>
+            </p>
+
+            <p>
+                Телефон:
+                <span id="profile-phone">
+                    +380 66 123 45 67
+                </span>
+            </p>
+
+            <p>
+                Адреса:
+                <span id="profile-address">
+                    м. Чернівці
+                </span>
+            </p>
+
+            <hr>
+
+            <input type="password" id="new-profile-pass" placeholder="Новий пароль">
+
+            <input type="text" id="new-profile-phone" placeholder="Новий телефон">
+
+            <input type="text" id="new-profile-address" placeholder="Нова адреса">
+
+            <button onclick="saveProfileData()">
+                Зберегти
+            </button>
+
+            <button onclick="logoutUser()">
+                Вийти
+            </button>
+
+            <button onclick="closeModal('profile-modal')">
+                Закрити
+            </button>
+
+        </div>
+
+    </div>
+
+    <div id="cart-modal" class="hidden modal">
+
+        <div class="modal-content">
+
+            <h2>
+                🛒 Кошик
+            </h2>
+
+            <div id="cart-items-list">
+                Кошик порожній ☹️
+            </div>
+
+            <h3>
+                Разом:
+                <span id="vseho-groshiv">
+                    0
+                </span>
+                $
+            </h3>
+
+            <button id="sendBtn">
+                Оформити замовлення
+            </button>
+
+            <button id="close-cart">
+                Закрити
+            </button>
+
+        </div>
+
+    </div>
+
+    <section class="news">
+
+        <h2>📰 Новини</h2>
+
+        <div id="news-sidebar-list"></div>
+
+        <div id="full-text-news"></div>
+
+    </section>
+
+    <section class="gallery">
+
+        <h2>🔥 Популярні авто</h2>
+
+        <div id="gallery-grid"></div>
+
+        <button id="load-more-btn" onclick="loadMore()">
+            Завантажити ще
+        </button>
+
+    </section>
+
+    <div id="reklama" class="reklama">
+
+        <h2>
+            🚘 Реклама
+        </h2>
+
+        <p>
+            Закрити через
+            <span id="sek">5</span>
+            сек
+        </p>
+
+        <button id="btn-close" disabled onclick="document.getElementById('reklama').style.display='none'">
+            Закрити
+        </button>
+
+    </div>
+
+    <script src="script.js"></script>
+
+</body>
+
+</html>
