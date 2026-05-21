@@ -2,13 +2,20 @@
 <html lang="uk">
 
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
     <title>Auto Store</title>
 
     <link rel="stylesheet" href="style.css">
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 </head>
 
 <body>
@@ -97,73 +104,108 @@
 
         <h2>⚙️ Admin Panel</h2>
 
-        <input type="text" id="item-name" placeholder="Назва авто">
+        <input
+            type="text"
+            id="item-name"
+            placeholder="Назва авто"
+        >
 
-        <input type="text" id="item-description" placeholder="Тип авто / опис">
+        <input
+            type="text"
+            id="item-description"
+            placeholder="Тип авто / опис"
+        >
 
-        <input type="number" id="item-price" placeholder="Ціна">
+        <input
+            type="number"
+            id="item-price"
+            placeholder="Ціна"
+        >
 
-        <input type="text" id="item-image" placeholder="URL картинки">
+        <input
+            type="text"
+            id="item-image"
+            placeholder="URL картинки"
+        >
 
         <button onclick="addItem()">
             Додати авто
         </button>
 
-        <hr>
+    </section>
 
-        <h3>📊 Статистика</h3>
+    <section id="charts-panel">
 
-        <button onclick="pokazatyGrafik('bar')">
-            Bar
-        </button>
+        <h2>📊 Статистика продажів</h2>
 
-        <button onclick="pokazatyGrafik('pie')">
-            Pie
-        </button>
+        <div class="chart-buttons">
 
-        <button onclick="pokazatyGrafik('line')">
-            Line
-        </button>
+            <button onclick="showChart('bar')">
+                Стовпчиковий
+            </button>
 
-        <canvas id="moiaDiagrama"></canvas>
+            <button onclick="showChart('pie')">
+                Круговий
+            </button>
+
+            <button onclick="showChart('line')">
+                Лінійний
+            </button>
+
+        </div>
+
+        <canvas id="salesChart"></canvas>
 
     </section>
 
     <div id="auth-modal" class="hidden modal">
 
-        <div class="modal-content">
+    <div class="modal-content">
 
-            <h2 id="titul">
-                Вхід
-            </h2>
+        <h2 id="auth-title">
+            Вхід
+        </h2>
 
-            <form id="forma">
+        <form id="forma">
 
-                <input type="text" id="log" placeholder="Логін" required>
+            <input
+                type="text"
+                id="log"
+                placeholder="Логін"
+                required
+            >
 
-                <input type="password" id="pas" placeholder="Пароль" required>
+            <input
+                type="password"
+                id="pas"
+                placeholder="Пароль"
+                required
+            >
 
-                <input type="password" id="pas2" class="hidden" placeholder="Повторіть пароль">
+            <input
+                type="password"
+                id="pas2"
+                class="hidden"
+                placeholder="Повторіть пароль"
+            >
 
-                <button type="submit" id="knopka">
-                    Увійти
-                </button>
-
-            </form>
-
-            <p id="sos"></p>
-
-            <button id="zmina">
-                Ще немає акаунту? Реєстрація
+            <button type="submit" id="auth-submit">
+                Увійти
             </button>
 
-            <button id="close-auth">
-                Закрити
-            </button>
+        </form>
 
-        </div>
+        <button id="toggleAuth">
+            Ще немає акаунта? Реєстрація
+        </button>
+
+        <button id="close-auth">
+            Закрити
+        </button>
 
     </div>
+
+</div>
 
     <div id="profile-modal" class="hidden modal">
 
@@ -192,23 +234,27 @@
                 </span>
             </p>
 
-            <hr>
+            <input
+                type="text"
+                id="new-profile-phone"
+                placeholder="Новий телефон"
+            >
 
-            <input type="password" id="new-profile-pass" placeholder="Новий пароль">
-
-            <input type="text" id="new-profile-phone" placeholder="Новий телефон">
-
-            <input type="text" id="new-profile-address" placeholder="Нова адреса">
+            <input
+                type="text"
+                id="new-profile-address"
+                placeholder="Нова адреса"
+            >
 
             <button onclick="saveProfileData()">
                 Зберегти
             </button>
 
-            <button onclick="logoutUser()">
+            <button onclick="logout()">
                 Вийти
             </button>
 
-            <button onclick="closeModal('profile-modal')">
+            <button id="close-profile">
                 Закрити
             </button>
 
@@ -229,11 +275,15 @@
             </div>
 
             <h3>
+
                 Разом:
+
                 <span id="vseho-groshiv">
                     0
                 </span>
+
                 $
+
             </h3>
 
             <button id="sendBtn">
@@ -245,46 +295,6 @@
             </button>
 
         </div>
-
-    </div>
-
-    <section class="news">
-
-        <h2>📰 Новини</h2>
-
-        <div id="news-sidebar-list"></div>
-
-        <div id="full-text-news"></div>
-
-    </section>
-
-    <section class="gallery">
-
-        <h2>🔥 Популярні авто</h2>
-
-        <div id="gallery-grid"></div>
-
-        <button id="load-more-btn" onclick="loadMore()">
-            Завантажити ще
-        </button>
-
-    </section>
-
-    <div id="reklama" class="reklama">
-
-        <h2>
-            🚘 Реклама
-        </h2>
-
-        <p>
-            Закрити через
-            <span id="sek">5</span>
-            сек
-        </p>
-
-        <button id="btn-close" disabled onclick="document.getElementById('reklama').style.display='none'">
-            Закрити
-        </button>
 
     </div>
 
