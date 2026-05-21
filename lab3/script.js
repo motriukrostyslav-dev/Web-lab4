@@ -1,262 +1,690 @@
-const API = "https://backend-for-students-production.up.railway.app/api";
+const API =
+    "https://backend-for-students-production.up.railway.app/api";
 
-var token = localStorage.getItem("token") || "";
+let token =
+    localStorage.getItem("token") || "";
 
-var statusVhodu = false;
-var rezhym = "vhid";
-var isAdmin = false;
+let currentUser = null;
 
-var current = "все";
+let isAdmin = false;
 
-var globalCarsList = [];
+let cars = [];
 
-var currentUserLogin = "";
+let currentCategory = "все";
 
-var userProfileData = {
-    username: "",
-    phone: "+380 66 123 45 67",
-    address: "м. Чернівці",
-    orders: []
+let cart = [];
+
+let salesChart = null;
+
+let slide = 1;
+
+let authMode = "login";
+
+let salesData = {
+
+    Audi: 5,
+    BMW: 8,
+    Tesla: 3,
+    Mercedes: 6
+
 };
 
-function openModal(id) {
-    document.getElementById(id).classList.remove("hidden");
-}
 
-function closeModal(id) {
-    document.getElementById(id).classList.add("hidden");
-}
 
-window.addEventListener("load", function () {
+window.addEventListener("load", () => {
 
-    show("все");
+    if(localStorage.getItem("token")){
 
-    document.getElementById("authBtn").onclick = function () {
+        token =
+            localStorage.getItem("token");
 
-        if (statusVhodu === true) {
+    }
 
-            if (isAdmin === true) {
+    fetchCars();
 
-                logoutUser();
+    initEvents();
+
+});
+
+
+
+function initEvents(){
+
+    document.getElementById("authBtn")
+    .addEventListener("click", () => {
+
+        if(currentUser){
+
+            if(isAdmin){
+
+                logout();
 
             } else {
 
                 openModal("profile-modal");
+
             }
 
         } else {
 
             openModal("auth-modal");
-        }
-    };
 
-    document.getElementById("cartBtn").onclick = function () {
+        }
+
+    });
+
+
+
+    document.getElementById("cartBtn")
+    .addEventListener("click", () => {
 
         openModal("cart-modal");
-    };
 
-    document.getElementById("close-auth").onclick = function () {
+    });
+
+
+
+    document.getElementById("close-auth")
+    .addEventListener("click", () => {
 
         closeModal("auth-modal");
-    };
 
-    document.getElementById("close-cart").onclick = function () {
+    });
+
+
+
+    document.getElementById("close-cart")
+    .addEventListener("click", () => {
 
         closeModal("cart-modal");
-    };
-});
 
-var slide = 1;
+    });
 
-document.getElementById("nextBtn").onclick = function () {
 
-    slide++;
 
-    if (slide > 3) {
-        slide = 1;
-    }
+    document.getElementById("close-profile")
+    .addEventListener("click", () => {
 
-    showSlide();
-};
+        closeModal("profile-modal");
 
-document.getElementById("prevBtn").onclick = function () {
+    });
 
-    slide--;
 
-    if (slide < 1) {
-        slide = 3;
-    }
 
-    showSlide();
-};
+    document.getElementById("toggleAuth")
+    .addEventListener("click", toggleAuthMode);
 
-function showSlide() {
 
-    if (slide === 1) {
 
-        document.getElementById("promo-title").innerText =
-            "Весняні знижки!";
+    document.getElementById("forma")
+    .addEventListener("submit", login);
 
-        document.getElementById("promo-text").innerText =
-            "Знижки на Audi та BMW.";
-    }
 
-    if (slide === 2) {
 
-        document.getElementById("promo-title").innerText =
-            "Нові електрокари!";
+    document.getElementById("sortPrice")
+    .addEventListener("change", showCars);
 
-        document.getElementById("promo-text").innerText =
-            "Tesla та Audi E-Tron вже в магазині.";
-    }
 
-    if (slide === 3) {
 
-        document.getElementById("promo-title").innerText =
-            "Безкоштовна доставка!";
+    document.getElementById("sendBtn")
+    .addEventListener("click", makeOrder);
 
-        document.getElementById("promo-text").innerText =
-            "При покупці авто від 20000$.";
-    }
+
+
+    document.getElementById("nextBtn")
+    .addEventListener("click", () => {
+
+        slide++;
+
+        if(slide > 3){
+
+            slide = 1;
+
+        }
+
+        showSlide();
+
+    });
+
+
+
+    document.getElementById("prevBtn")
+    .addEventListener("click", () => {
+
+        slide--;
+
+        if(slide < 1){
+
+            slide = 3;
+
+        }
+
+        showSlide();
+
+    });
+
 }
 
-async function show(category) {
+function toggleAuthMode(){
 
-    current = category;
+    let title =
+        document.getElementById("auth-title");
 
-    var grid = document.getElementById("product-grid");
+    let submit =
+        document.getElementById("auth-submit");
 
-    if (!grid) return;
+    let pas2 =
+        document.getElementById("pas2");
+
+    let toggle =
+        document.getElementById("toggleAuth");
+
+
+
+    if(authMode === "login"){
+
+        authMode = "register";
+
+
+
+        title.innerText =
+            "Реєстрація";
+
+
+
+        submit.innerText =
+            "Зареєструватися";
+
+
+
+        pas2.classList.remove("hidden");
+
+
+
+        toggle.innerText =
+            "Вже є акаунт? Увійти";
+
+    } else {
+
+        authMode = "login";
+
+        document.getElementById("pas2").value = "";
+
+
+
+        title.innerText =
+            "Вхід";
+
+
+
+        submit.innerText =
+            "Увійти";
+
+
+
+        pas2.classList.add("hidden");
+
+
+
+        toggle.innerText =
+            "Ще немає акаунта? Реєстрація";
+
+    }
+
+}
+
+
+
+function openModal(id){
+
+    document.getElementById(id)
+    .classList.remove("hidden");
+
+}
+
+
+
+function closeModal(id){
+
+    document.getElementById(id)
+    .classList.add("hidden");
+
+}
+
+
+
+function show(category){
+
+    currentCategory = category;
+
+    showCars();
+
+}
+
+
+
+async function fetchCars(){
+
+    try{
+
+        let response =
+            await fetch(API + "/items");
+
+        let data =
+            await response.json();
+
+        cars = data.filter(
+            item => item.category === "auto-store"
+        );
+
+        showCars();
+
+    } catch(err){
+
+        console.log(err);
+
+    }
+
+}
+
+
+
+function showCars(){
+
+    let grid =
+        document.getElementById("product-grid");
 
     grid.innerHTML = "";
 
-    let localCars =
-        JSON.parse(localStorage.getItem("cars")) || [];
 
-    if (localCars.length === 0) {
 
-        try {
+    let carsToShow = [...cars];
 
-            let response = await fetch(
-                API + "/items-query?category=auto-store"
-            );
+    
 
-            localCars = await response.json();
 
-            localStorage.setItem(
-                "cars",
-                JSON.stringify(localCars)
-            );
 
-        } catch (err) {
+    if(currentCategory !== "все"){
 
-            console.log(err);
-        }
-    }
+    carsToShow = carsToShow.filter(car =>
 
-    globalCarsList = localCars;
+        car.description
+        .toLowerCase()
+        .includes(
+            currentCategory.toLowerCase()
+        )
 
-    let cars = [...localCars];
+    );
+
+}
+
+
 
     let sort =
         document.getElementById("sortPrice").value;
 
-    if (sort === "cheap") {
 
-        cars.sort((a, b) => a.price - b.price);
+
+    if(sort === "cheap"){
+
+        carsToShow.sort(
+            (a, b) => a.price - b.price
+        );
+
     }
 
-    if (sort === "expensive") {
 
-        cars.sort((a, b) => b.price - a.price);
+
+    if(sort === "expensive"){
+
+        carsToShow.sort(
+            (a, b) => b.price - a.price
+        );
+
     }
 
-    for (var i = 0; i < cars.length; i++) {
 
-        var carCategory = "";
 
-        if (cars[i].description) {
+    carsToShow.forEach(car => {
 
-            carCategory =
-                cars[i].description.toLowerCase();
-        }
+        let buttons = `
 
-        if (
-            current === "все" ||
-            carCategory.indexOf(current.toLowerCase()) !== -1
-        ) {
+            <button
+                class="buy-btn"
+                onclick="buyCar(
+                    '${car.name}',
+                    ${car.price}
+                )"
+            >
 
-            var buttons = `
+                Купити
+
+            </button>
+
+        `;
+
+
+
+        if(isAdmin){
+
+            buttons = `
+
                 <button
-                    class="buy-btn"
-                    onclick="kupyty(
-                        '${cars[i].name}',
-                        ${cars[i].price}
-                    )"
+                    onclick="editCar('${car._id}')"
                 >
-                    Купити
+
+                    Редагувати
+
                 </button>
+
+                <button
+                    onclick="deleteCar('${car._id}')"
+                >
+
+                    Видалити
+
+                </button>
+
             `;
 
-            if (isAdmin === true) {
-
-                buttons = `
-                    <div style="display:flex;flex-direction:column;gap:5px;">
-
-                        <button
-                            style="background:orange;color:white;"
-                            onclick="editCar('${cars[i]._id}')"
-                        >
-                            ⚙️ Редагувати
-                        </button>
-
-                        <button
-                            style="background:red;color:white;"
-                            onclick="deleteCar('${cars[i]._id}')"
-                        >
-                            🗑️ Видалити
-                        </button>
-
-                    </div>
-                `;
-            }
-
-            grid.innerHTML += `
-                <div class="product-card">
-
-                    <img
-                        src="${cars[i].image}"
-                        onerror="this.src='https://dummyimage.com/250x180/cccccc/000000&text=No+Image'"
-                    >
-
-                    <h3>${cars[i].name}</h3>
-
-                    <p>${cars[i].description}</p>
-
-                    <h2>${cars[i].price} $</h2>
-
-                    ${buttons}
-
-                </div>
-            `;
         }
-    }
+
+
+
+        grid.innerHTML += `
+
+            <div class="product-card">
+
+                <img
+                    src="${car.image}"
+                    onerror="
+                    this.src='https://dummyimage.com/250x180/cccccc/000000&text=No+Image'
+                    "
+                >
+
+                <h3>${car.name}</h3>
+
+                <p>${car.description}</p>
+
+                <h2>${car.price}$</h2>
+
+                ${buttons}
+
+            </div>
+
+        `;
+
+    });
+
 }
 
-document.getElementById("sortPrice").onchange =
-    function () {
 
-        show(current);
-    };
 
-async function addItem() {
+async function login(e){
 
-    if (!isAdmin) {
+    e.preventDefault();
 
-        alert("Тільки admin може додавати авто!");
+    let username =
+        document.getElementById("log").value;
+
+    let password =
+        document.getElementById("pas").value;
+
+    let password2 =
+        document.getElementById("pas2").value;
+
+
+
+    if(authMode === "register"){
+
+        if(password !== password2){
+
+            alert("Паролі не співпадають");
+
+            return;
+
+        }
+
+        try{
+
+            let response = await fetch(
+
+                API + "/register",
+
+                {
+
+                    method: "POST",
+
+                    headers: {
+
+                        "Content-Type":
+                        "application/json"
+
+                    },
+
+                    body: JSON.stringify({
+
+                        username: username,
+                        password: password
+
+                    })
+
+                }
+
+            );
+
+
+
+            let data =
+                await response.json();
+
+            console.log(data);
+
+
+
+            if(response.ok){
+
+                alert("Реєстрація успішна!");
+
+
+
+                authMode = "login";
+
+
+
+                document.getElementById(
+                    "auth-title"
+                ).innerText = "Вхід";
+
+
+
+                document.getElementById(
+                    "auth-submit"
+                ).innerText = "Увійти";
+
+
+
+                document.getElementById(
+                    "pas2"
+                ).classList.add("hidden");
+
+
+
+                document.getElementById(
+                    "toggleAuth"
+                ).innerText =
+                    "Ще немає акаунта? Реєстрація";
+
+            } else {
+
+                alert(
+
+                    data.message ||
+                    "Користувач уже існує"
+
+                );
+
+            }
+
+        } catch(err){
+
+            console.log(err);
+
+            alert("Помилка реєстрації");
+
+        }
 
         return;
+
     }
+
+
+    try{
+
+        let response = await fetch(
+
+            API + "/login",
+
+            {
+
+                method: "POST",
+
+                headers: {
+
+                    "Content-Type":
+                    "application/json"
+
+                },
+
+                body: JSON.stringify({
+
+                    username: username,
+                    password: password
+
+                })
+
+            }
+
+        );
+
+
+
+        let data =
+            await response.json();
+
+        console.log(data);
+
+
+
+        if(response.ok && data.token){
+
+            token = data.token;
+
+            localStorage.setItem(
+                "token",
+                token
+            );
+
+
+
+            currentUser = username;
+
+
+
+            document.getElementById(
+                "profile-login"
+            ).innerText = username;
+
+
+
+            if(username === "Ros777"){
+
+                isAdmin = true;
+
+
+
+                document.getElementById(
+                    "admin-panel"
+                ).style.display = "block";
+
+
+
+                document.getElementById(
+                    "charts-panel"
+                ).style.display = "block";
+
+
+
+                showChart("bar");
+
+
+
+                document.getElementById(
+                    "authBtn"
+                ).innerText =
+                    "Вихід (Admin)";
+
+            }
+
+            else {
+
+                isAdmin = false;
+
+
+
+                document.getElementById(
+                    "authBtn"
+                ).innerText =
+                    "Мій кабінет";
+
+            }
+
+
+
+            closeModal("auth-modal");
+
+
+
+            alert("Вхід успішний!");
+
+
+
+            fetchCars();
+
+        } else {
+
+            alert(
+
+                data.message ||
+                "Невірний логін або пароль"
+
+            );
+
+        }
+
+    } catch(err){
+
+        console.log(err);
+
+        alert("Помилка входу");
+
+    }
+
+}
+
+
+
+async function addItem(){
+
+    if(!isAdmin){
+
+        alert("Тільки admin!");
+
+        return;
+
+    }
+
+
 
     let name =
         document.getElementById("item-name").value;
@@ -264,477 +692,559 @@ async function addItem() {
     let description =
         document.getElementById("item-description").value;
 
-    let price = parseFloat(
-        document.getElementById("item-price").value
-    );
+    let price =
+        document.getElementById("item-price").value;
 
     let image =
         document.getElementById("item-image").value;
 
-    if (
-        !name ||
-        !description ||
-        isNaN(price) ||
-        !image
-    ) {
 
-        alert("Заповніть всі поля!");
 
-        return;
+    try{
+
+        await fetch(
+
+            API + "/items",
+
+            {
+
+                method: "POST",
+
+                headers: {
+
+                    "Content-Type":
+                    "application/json",
+
+                    "Authorization":
+                    `Bearer ${token}`
+
+                },
+
+                body: JSON.stringify({
+
+                    name,
+                    description,
+                    price: Number(price),
+                    image,
+                    category: "auto-store"
+
+                })
+
+            }
+
+        );
+
+
+
+        alert("Авто додано!");
+
+        fetchCars();
+
+    } catch(err){
+
+        console.log(err);
+
     }
 
-    let newCar = {
-
-        _id: Date.now(),
-
-        name: name,
-
-        description: description,
-
-        price: price,
-
-        image: image,
-
-        category: "auto-store"
-    };
-
-    globalCarsList.push(newCar);
-
-    localStorage.setItem(
-        "cars",
-        JSON.stringify(globalCarsList)
-    );
-
-    alert("Авто додано!");
-
-    show("все");
 }
 
-function deleteCar(id) {
 
-    if (!isAdmin) {
+
+async function deleteCar(id){
+
+    try{
+
+        await fetch(
+
+            API + "/items/" + id,
+
+            {
+
+                method: "DELETE",
+
+                headers: {
+
+                    "Authorization":
+                    `Bearer ${token}`
+
+                }
+
+            }
+
+        );
+
+
+
+        alert("Авто видалено!");
+
+        fetchCars();
+
+    } catch(err){
+
+        console.log(err);
+
+    }
+
+}
+
+
+
+async function editCar(id){
+
+    if(!isAdmin){
 
         alert("Недостатньо прав!");
 
         return;
+
     }
 
-    let yes = confirm("Видалити авто?");
 
-    if (!yes) return;
 
-    globalCarsList =
-        globalCarsList.filter(
-            car => car._id != id
+    let newPrice =
+        prompt("Нова ціна:");
+
+
+
+    if(!newPrice) return;
+
+
+
+    try{
+
+        let response = await fetch(
+
+            API + "/items/" + id,
+
+            {
+
+                method: "PUT",
+
+                headers: {
+
+                    "Content-Type":
+                    "application/json",
+
+                    "Authorization":
+                    `Bearer ${token}`
+
+                },
+
+                body: JSON.stringify({
+
+                    price: Number(newPrice)
+
+                })
+
+            }
+
         );
 
-    localStorage.setItem(
-        "cars",
-        JSON.stringify(globalCarsList)
-    );
 
-    alert("Авто видалено!");
 
-    show("все");
-}
+        let data =
+            await response.json();
 
-function editCar(id) {
+        console.log(data);
 
-    if (!isAdmin) return;
 
-    var found = null;
 
-    for (var i = 0; i < globalCarsList.length; i++) {
+        if(response.ok){
 
-        if (globalCarsList[i]._id == id) {
+            alert("Авто оновлено!");
 
-            found = globalCarsList[i];
-
-            break;
-        }
-    }
-
-    if (found == null) return;
-
-    var newPrice = prompt(
-        "Нова ціна:",
-        found.price
-    );
-
-    if (newPrice == null) return;
-
-    newPrice = parseFloat(newPrice);
-
-    if (isNaN(newPrice)) {
-
-        alert("Невірна ціна!");
-
-        return;
-    }
-
-    found.price = newPrice;
-
-    localStorage.setItem(
-        "cars",
-        JSON.stringify(globalCarsList)
-    );
-
-    alert("Авто оновлено!");
-
-    show("все");
-}
-
-document.getElementById("zmina").onclick =
-    function () {
-
-        var titul =
-            document.getElementById("titul");
-
-        var knopka =
-            document.getElementById("knopka");
-
-        var pas2 =
-            document.getElementById("pas2");
-
-        if (rezhym === "vhid") {
-
-            rezhym = "reg";
-
-            titul.innerText = "Реєстрація";
-
-            knopka.innerText =
-                "Створити акаунт";
-
-            pas2.classList.remove("hidden");
-
-            this.innerText =
-                "Вже є акаунт? Увійти";
+            fetchCars();
 
         } else {
 
-            rezhym = "vhid";
+            alert("Помилка редагування");
 
-            titul.innerText = "Вхід";
-
-            knopka.innerText = "Увійти";
-
-            pas2.classList.add("hidden");
-
-            this.innerText =
-                "Ще немає акаунту? Реєстрація";
-        }
-    };
-
-document.getElementById("forma").onsubmit =
-    async function (e) {
-
-        e.preventDefault();
-
-        var login =
-            document.getElementById("log").value;
-
-        var pass =
-            document.getElementById("pas").value;
-
-        if (
-            login === "Ros098" &&
-            pass === "123456"
-        ) {
-
-            statusVhodu = true;
-
-            isAdmin = true;
-
-            token = "student-admin-token";
-
-            localStorage.setItem("token", token);
-
-            currentUserLogin = "admin";
-
-            document.getElementById(
-                "authBtn"
-            ).innerText =
-                "Вихід (Admin)";
-
-            document.getElementById(
-                "admin-panel"
-            ).style.display = "block";
-
-            closeModal("auth-modal");
-
-            alert("Вхід як ADMIN!");
-
-            show("все");
-
-            return;
         }
 
-        if (
-            login.length >= 3 &&
-            pass.length >= 3
-        ) {
+    } catch(err){
 
-            statusVhodu = true;
+        console.log(err);
 
-            isAdmin = false;
+        alert("Server error");
 
-            currentUserLogin = login;
-
-            document.getElementById(
-                "authBtn"
-            ).innerText =
-                "Мій кабінет";
-
-            document.getElementById(
-                "profile-login"
-            ).innerText = login;
-
-            closeModal("auth-modal");
-
-            alert("Вхід успішний!");
-
-            show("все");
-
-            return;
-        }
-
-        alert("Помилка входу!");
-    };
-
-function saveProfileData() {
-
-    var newPhone =
-        document.getElementById(
-            "new-profile-phone"
-        ).value;
-
-    var newAddress =
-        document.getElementById(
-            "new-profile-address"
-        ).value;
-
-    if (newPhone) {
-
-        userProfileData.phone = newPhone;
-
-        document.getElementById(
-            "profile-phone"
-        ).innerText = newPhone;
     }
 
-    if (newAddress) {
-
-        userProfileData.address = newAddress;
-
-        document.getElementById(
-            "profile-address"
-        ).innerText = newAddress;
-    }
-
-    alert("Дані збережено!");
 }
 
-var suma = 0;
 
-function kupyty(name, price) {
 
-    var list =
+function buyCar(name, price){
+
+    cart.push({
+
+        name,
+        price
+
+    });
+
+
+
+    if(salesData[name]){
+
+        salesData[name]++;
+
+    } else {
+
+        salesData[name] = 1;
+
+    }
+
+
+
+    renderCart();
+
+
+
+    if(isAdmin){
+
+        showChart("bar");
+
+    }
+
+}
+
+
+
+function renderCart(){
+
+    let list =
         document.getElementById(
             "cart-items-list"
         );
 
-    if (suma === 0) {
 
-        list.innerHTML = "";
-    }
 
-    let itemId = Date.now();
+    if(cart.length === 0){
 
-    list.innerHTML += `
-        <div
-            id="cart-${itemId}"
-            style="
-                border-bottom:1px solid #ccc;
-                padding:10px;
-                display:flex;
-                justify-content:space-between;
-                align-items:center;
-            "
-        >
+        list.innerHTML =
+            "Кошик порожній ☹️";
 
-            <div>
-                ${name}
-                -
-                ${price}$
-            </div>
 
-            <button
-                onclick="deleteFromCart(${itemId}, ${price})"
-                style="
-                    background:red;
-                    color:white;
-                    border:none;
-                    padding:5px 10px;
-                    border-radius:5px;
-                    cursor:pointer;
-                "
-            >
-                ✖
-            </button>
-
-        </div>
-    `;
-
-    suma += price;
-
-    document.getElementById(
-        "vseho-groshiv"
-    ).innerText = suma;
-}
-
-function deleteFromCart(id, price) {
-
-    let item =
-        document.getElementById(
-            "cart-" + id
-        );
-
-    if (item) {
-
-        item.remove();
-
-        suma -= price;
-
-        if (suma < 0) {
-
-            suma = 0;
-        }
 
         document.getElementById(
             "vseho-groshiv"
-        ).innerText = suma;
+        ).innerText = 0;
 
-        let list =
-            document.getElementById(
-                "cart-items-list"
-            );
+        return;
 
-        if (
-            list.children.length === 0
-        ) {
-
-            list.innerHTML =
-                "Кошик порожній ☹️";
-        }
     }
+
+
+
+    list.innerHTML = "";
+
+
+
+    let total = 0;
+
+
+
+    cart.forEach((item, index) => {
+
+        total += item.price;
+
+
+
+        list.innerHTML += `
+
+            <div
+                style="
+                display:flex;
+                justify-content:space-between;
+                margin-bottom:10px;
+                "
+            >
+
+                <span>
+
+                    ${item.name}
+                    -
+                    ${item.price}$
+
+                </span>
+
+                <button
+                    onclick="removeFromCart(${index})"
+                >
+
+                    ✖
+
+                </button>
+
+            </div>
+
+        `;
+
+    });
+
+
+
+    document.getElementById(
+        "vseho-groshiv"
+    ).innerText = total;
+
 }
 
-document.addEventListener(
-    "click",
-    function (e) {
 
-        if (e.target.id === "sendBtn") {
 
-            if (!statusVhodu) {
+function removeFromCart(index){
 
-                alert(
-                    "Спочатку увійдіть!"
-                );
+    cart.splice(index, 1);
 
-                return;
-            }
+    renderCart();
 
-            alert(
-                "Замовлення оформлено!"
-            );
+}
 
-            document.getElementById(
-                "cart-items-list"
-            ).innerHTML =
-                "Кошик порожній ☹️";
 
-            suma = 0;
 
-            document.getElementById(
-                "vseho-groshiv"
-            ).innerText = "0";
+function makeOrder(){
 
-            closeModal("cart-modal");
-        }
+    if(!currentUser){
+
+        alert("Спочатку увійдіть!");
+
+        return;
+
     }
-);
 
-var migrafik = null;
 
-function pokazatyGrafik(type) {
 
-    var canvas =
+    alert("Замовлення оформлено!");
+
+
+
+    cart = [];
+
+    renderCart();
+
+    closeModal("cart-modal");
+
+}
+
+function show(category){
+
+    currentCategory = category;
+
+    showCars();
+
+}
+
+
+
+function showChart(type){
+
+    if(!isAdmin) return;
+
+
+
+    let ctx =
         document.getElementById(
-            "moiaDiagrama"
-        );
+            "salesChart"
+        ).getContext("2d");
 
-    var ctx =
-        canvas.getContext("2d");
 
-    if (migrafik != null) {
 
-        migrafik.destroy();
+    if(salesChart){
+
+        salesChart.destroy();
+
     }
 
-    migrafik = new Chart(ctx, {
+
+
+    salesChart = new Chart(ctx, {
 
         type: type,
 
         data: {
 
-            labels: [
-                "Audi",
-                "BMW",
-                "Tesla",
-                "Mercedes"
-            ],
+            labels: Object.keys(salesData),
 
             datasets: [{
 
                 label: "Продажі",
 
-                data: [5, 3, 7, 4],
+                data: Object.values(salesData),
 
                 backgroundColor: [
+
                     "#2563eb",
                     "#ef4444",
                     "#10b981",
                     "#f59e0b"
-                ]
+
+                ],
+
+                borderWidth: 2
+
             }]
+
+        },
+
+        options: {
+
+            responsive: true
+
         }
+
     });
+
 }
 
-function logoutUser() {
 
-    statusVhodu = false;
 
-    isAdmin = false;
+function saveProfileData(){
+
+    let phone =
+        document.getElementById(
+            "new-profile-phone"
+        ).value;
+
+
+
+    let address =
+        document.getElementById(
+            "new-profile-address"
+        ).value;
+
+
+
+    if(phone){
+
+        document.getElementById(
+            "profile-phone"
+        ).innerText = phone;
+
+    }
+
+
+
+    if(address){
+
+        document.getElementById(
+            "profile-address"
+        ).innerText = address;
+
+    }
+
+
+
+    alert("Дані збережено!");
+
+}
+
+
+
+function logout(){
 
     token = "";
 
+    currentUser = null;
+
+    isAdmin = false;
+
+    cart = [];
+
+
+
     localStorage.removeItem("token");
 
-    currentUserLogin = "";
+
+
+    renderCart();
+
+
 
     document.getElementById(
         "authBtn"
     ).innerText =
         "Вхід / Реєстрація";
 
+
+
     document.getElementById(
         "admin-panel"
     ).style.display = "none";
 
+
+
+    document.getElementById(
+        "charts-panel"
+    ).style.display = "none";
+
+
+
     closeModal("profile-modal");
+
+
 
     alert("Вихід виконано!");
 
-    show("все");
+
+
+    fetchCars();
+
+}
+
+
+
+function showSlide(){
+
+    if(slide === 1){
+
+        document.getElementById(
+            "promo-title"
+        ).innerText =
+            "Весняні знижки!";
+
+
+
+        document.getElementById(
+            "promo-text"
+        ).innerText =
+            "Знижки на Audi та BMW.";
+
+    }
+
+
+
+    if(slide === 2){
+
+        document.getElementById(
+            "promo-title"
+        ).innerText =
+            "Нові електрокари!";
+
+
+
+        document.getElementById(
+            "promo-text"
+        ).innerText =
+            "Tesla вже в магазині.";
+
+    }
+
+
+
+    if(slide === 3){
+
+        document.getElementById(
+            "promo-title"
+        ).innerText =
+            "Безкоштовна доставка!";
+
+
+
+        document.getElementById(
+            "promo-text"
+        ).innerText =
+            "Для авто від 20000$";
+
+    }
+
 }
