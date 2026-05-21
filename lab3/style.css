@@ -5,6 +5,7 @@ body {
     font-family: Arial, sans-serif;
 
     background: #f3f4f6;
+
 }
 
 .navbar {
@@ -20,6 +21,7 @@ body {
     background: #111827;
 
     color: white;
+
 }
 
 .nav-buttons {
@@ -27,6 +29,7 @@ body {
     display: flex;
 
     gap: 10px;
+
 }
 
 button {
@@ -45,12 +48,12 @@ button {
 
     font-weight: bold;
 
-    transition: 0.3s;
 }
 
 button:hover {
 
     background: #1d4ed8;
+
 }
 
 .promo {
@@ -66,11 +69,13 @@ button:hover {
     padding: 30px;
 
     background: white;
+
 }
 
 .promo-content {
 
     text-align: center;
+
 }
 
 .filter-box {
@@ -81,20 +86,12 @@ button:hover {
 
     gap: 10px;
 
-    flex-wrap: wrap;
-
     padding: 20px;
 
     background: white;
-}
 
-.filter-box select {
+    flex-wrap: wrap;
 
-    padding: 10px;
-
-    border-radius: 5px;
-
-    border: 1px solid #ccc;
 }
 
 #product-grid {
@@ -108,6 +105,7 @@ button:hover {
     gap: 20px;
 
     padding: 20px;
+
 }
 
 .product-card {
@@ -124,14 +122,6 @@ button:hover {
 
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 
-    transition: 0.3s;
-}
-
-.product-card:hover {
-
-    transform: translateY(-5px);
-
-    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
 }
 
 .product-card img {
@@ -143,6 +133,7 @@ button:hover {
     object-fit: cover;
 
     border-radius: 10px;
+
 }
 
 .buy-btn {
@@ -150,9 +141,11 @@ button:hover {
     width: 100%;
 
     margin-top: 10px;
+
 }
 
-#admin-panel {
+#admin-panel,
+#charts-panel {
 
     display: none;
 
@@ -165,6 +158,7 @@ button:hover {
     border-radius: 15px;
 
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+
 }
 
 #admin-panel input {
@@ -177,9 +171,18 @@ button:hover {
 
     padding: 10px;
 
-    border-radius: 5px;
+}
 
-    border: 1px solid #ccc;
+#toggleAuth {
+
+    background: #10b981;
+
+}
+
+#toggleAuth:hover {
+
+    background: #059669;
+
 }
 
 .modal {
@@ -196,7 +199,6 @@ button:hover {
 
     align-items: center;
 
-    z-index: 999;
 }
 
 .modal-content {
@@ -214,111 +216,29 @@ button:hover {
     flex-direction: column;
 
     gap: 10px;
+
 }
 
 .modal-content input {
 
     padding: 10px;
 
-    border-radius: 5px;
-
-    border: 1px solid #ccc;
 }
 
 .hidden {
 
     display: none !important;
+
 }
 
-
-.news {
-
-    background: white;
-
-    margin: 20px;
-
-    padding: 20px;
-
-    border-radius: 15px;
-}
-
-
-.gallery {
-
-    padding: 20px;
-}
-
-#gallery-grid {
+.chart-buttons {
 
     display: flex;
 
+    gap: 10px;
+
+    margin-bottom: 20px;
+
     flex-wrap: wrap;
 
-    gap: 20px;
-
-    justify-content: center;
-}
-
-.gallery-card {
-
-    width: 250px;
-
-    background: white;
-
-    border-radius: 15px;
-
-    overflow: hidden;
-
-    padding: 10px;
-
-    position: relative;
-
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-}
-
-.gallery-card img {
-
-    width: 100%;
-
-    height: 250px;
-
-    object-fit: cover;
-
-    border-radius: 10px;
-}
-
-.discount-tag {
-
-    position: absolute;
-
-    top: 10px;
-
-    left: 10px;
-
-    background: red;
-
-    color: white;
-
-    padding: 5px 10px;
-
-    border-radius: 5px;
-}
-
-.reklama {
-
-    position: fixed;
-
-    bottom: 20px;
-
-    right: 20px;
-
-    background: white;
-
-    padding: 20px;
-
-    border-radius: 15px;
-
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-
-    display: none;
 }
